@@ -1,3 +1,4 @@
+# Use the official Ubuntu 20.04 image
 FROM ubuntu:20.04
 
 # Avoid prompts from apt
@@ -13,18 +14,19 @@ RUN apt-get update && apt-get install -y \
 # Create minecraft directory
 WORKDIR /minecraft
 
-# Download Bedrock Server directly from official source
-RUN wget https://piston-data.mojang.com/v1/objects/ead5059acb994e5acf0b14a30ba5536f2303246c/server.jar \
-    && mkdir -p /minecraft \
+# Download Bedrock Edition Server directly from Mojang's official source
+RUN wget https://minecraft.azureedge.net/bin-linux/bedrock-server-1.20.30.03.tar.gz \
+    && tar -xvzf bedrock-server-1.20.30.03.tar.gz \
+    && rm bedrock-server-1.20.30.03.tar.gz \
     && touch eula.txt \
     && echo "eula=true" > eula.txt
 
-# Expose Minecraft port
+# Expose Minecraft Bedrock Edition port
 EXPOSE 19132/udp
 
 # Set up entrypoint script
 RUN echo '#!/bin/bash\n\
-java -Xmx1024M -Xms1024M -jar server.jar nogui' > /start.sh \
+./bedrock_server' > /start.sh \
     && chmod +x /start.sh
 
 # Start the server
