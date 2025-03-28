@@ -5,24 +5,27 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
-    curl \
+    wget \
     unzip \
-    ca-certificates \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Create minecraft directory
 WORKDIR /minecraft
 
-# Download Bedrock Server using curl
-RUN curl -L -o bedrock-server.zip https://github.com/PocketHost/minecraft-bedrock-server/releases/download/v1.20.51.01/bedrock-server.zip \
-    && unzip bedrock-server.zip \
-    && rm bedrock-server.zip
+# Download Bedrock Server directly from official source
+RUN wget https://piston-data.mojang.com/v1/objects/ead5059acb994e5acf0b14a30ba5536f2303246c/server.jar \
+    && mkdir -p /minecraft \
+    && touch eula.txt \
+    && echo "eula=true" > eula.txt
 
-# Expose Minecraft Bedrock port
+# Expose Minecraft port
 EXPOSE 19132/udp
 
-# Set environment variables
-ENV LD_LIBRARY_PATH=.
+# Set up entrypoint script
+RUN echo '#!/bin/bash\n\
+java -Xmx1024M -Xms1024M -jar server.jar nogui' > /start.sh \
+    && chmod +x /start.sh
 
 # Start the server
-CMD ["./bedrock_server"]
+CMD ["/start.sh"]
